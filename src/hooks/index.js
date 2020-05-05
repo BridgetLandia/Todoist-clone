@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { firebase } from '../firebase';
 import moment from 'moment';
+import { firebase } from '../firebase';
 import { collatedTasksExist } from '../helpers';
 
 export const useTasks = (selectedProject) => {
@@ -13,7 +13,7 @@ export const useTasks = (selectedProject) => {
 
 			unsubscribe =
 				selectedProject && !collatedTasksExist(selectedProject)
-					? (unsubscribe = unsubscribe.where('projectId', '==', 'selectedProject'))
+					? (unsubscribe = unsubscribe.where('projectId', '==', selectedProject))
 					: selectedProject === 'TODAY'
 						? (unsubscribe = unsubscribe.where('date', '==', moment().format('DD/MM/YYYY')))
 						: selectedProject === 'INBOX' || selectedProject === 0
@@ -34,19 +34,16 @@ export const useTasks = (selectedProject) => {
 							)
 						: newTasks.filter((task) => task.archived !== true)
 				);
-
 				setArchivedTasks(newTasks.filter((task) => task.archived !== false));
 			});
+
 			return () => unsubscribe();
 		},
 		[ selectedProject ]
 	);
+
 	return { tasks, archivedTasks };
 };
-
-// How to destructure them elsewhere
-// const selectedProject = 1
-// const { tasks, archivedTasks } = useTasks(selectedProject)
 
 export const useProjects = () => {
 	const [ projects, setProjects ] = useState([]);
@@ -57,7 +54,7 @@ export const useProjects = () => {
 				.firestore()
 				.collection('projects')
 				.where('userId', '==', 'Z5dtXsY9EWVEb8ptDkf7')
-				.orderedBy('projectId')
+				.orderBy('projectId')
 				.get()
 				.then((snapshot) => {
 					const allProjects = snapshot.docs.map((project) => ({
@@ -72,5 +69,6 @@ export const useProjects = () => {
 		},
 		[ projects ]
 	);
+
 	return { projects, setProjects };
 };
